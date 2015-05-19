@@ -1,0 +1,92 @@
+<html>
+    <head>
+        <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+
+		<style>
+			 #bids span { font-size: 32 }
+			 .pending { font-size: 30; color: darkblue }
+			 .ready { font-size: 30; color: darkgreen }
+			 .name { font-size: 30 }
+			 .number { font-size: 25; background-color: darkgreen; color: white }
+		</style>
+
+
+    </head>
+    <body style='padding: 10px;'> 
+		<div id='bids'>
+			<button class='btn btn-success' >1</button>
+			<button class='btn btn-success' >2</button>
+			<button class='btn btn-success' >3</button>
+			<button class='btn btn-success' >5</button>
+			<button class='btn btn-success' >8</button>
+			<button class='btn btn-success' >13</button>
+			
+			<!--
+			<span class='badge'>1</span>
+			<span class='badge'>2</span>
+			<span class='badge'>3</span>
+			<span class='badge'>5</span>
+			<span class='badge'>8</span>
+			<span class='badge'>13</span>
+			-->
+		</div>
+
+		<input style='margin-top:10px' id='name' class='form-control'/>
+		<button style='margin-top:10px' class='btn btn-primary' onclick='register()'>Register</button>
+		<div id='devlist'>
+		</div>
+
+        <script>
+			var app = new WebSocket("ws://vps.sonyar.info:8000/poker");
+
+			app.onmessage = function(msg) {
+				var devs = JSON.parse(msg.data);
+				$("#devlist").html('');
+
+				var waiting = false;
+				for (var name in devs) {
+					if (devs[name] == 0) {
+						waiting = true;
+					}
+				}
+
+				for (var name in devs) {
+					if (waiting && devs[name] != 0) {
+						$("#devlist").append("<span class='ready glyphicon glyphicon-ok-sign'></span><span class='name'>&nbsp;" + name + "</span>");
+					}
+					else if (waiting && devs[name] == 0) {
+						$("#devlist").append("<span class='pending glyphicon glyphicon-question-sign'></span><span class='name'>&nbsp" + name + "</span>");
+					}
+					else {
+						$("#devlist").append("<span class='number badge'>" + devs[name] + "</span><span class='name'>&nbsp" + name + "</span>");
+					}
+
+					$("#devlist").append("<br/>");
+				}
+			}
+
+			function send(data) {
+				app.send(JSON.stringify(data));
+			}
+
+			function register() {
+				send({ action: 'register', name: $("#name").val() });
+			}
+
+			function bid(e) {
+				send({ action: 'bid', name: $("#name").val(), number: $(e.target).text() });
+			}
+
+			$(document).ready(function() {
+				$("#bids span").click(bid);
+				$("#bids button").click(bid);
+			});
+
+        </script>
+    </body>
+</html>
+
+
