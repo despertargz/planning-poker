@@ -18,22 +18,34 @@ def home():
 
 @socket.route('/poker')
 def bid(ws):
+	print("connecting..." + str(len(socks)))
 	socks.append(ws)
 
-	while True:
-		text = ws.receive()
-		print("text: " + text)
-		msg = json.loads(text)
-		
-		if msg['action'] == 'register':
-			devs[msg['name']] = 0
-			for sock in socks:
-				sock.send(json.dumps(devs))
+	try:
+		while True:
+			text = ws.receive()
+			print("text: " + text)
+			msg = json.loads(text)
+			
+			if msg['action'] == 'register':
+				devs[msg['name']] = 0
+				for sock in socks:
+					try:
+						sock.send(json.dumps(devs.items()))
+					except Exception as e:
+						print('errorz: ' + str(e))
+						socks.remove(sock)
 
-		elif msg['action'] == 'bid':
-			devs[msg['name']] = int(msg['number'])
-			for sock in socks:
-				sock.send(json.dumps(devs))
+			elif msg['action'] == 'bid':
+				devs[msg['name']] = int(msg['number'])
+				for sock in socks:
+					try:
+						sock.send(json.dumps(devs.items()))
+					except Exception as e:
+						print('errorz: ' + str(e))
+						socks.remove(sock)
+	except Exception as e:
+		print('errorz: ' + str(e));
 
 
 
