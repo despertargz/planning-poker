@@ -2,6 +2,7 @@ from flask import Flask, render_template, request
 from flask_sockets import Sockets
 import json
 import yaml
+import traceback
 
 app = Flask('pp')
 app.debug = True
@@ -10,7 +11,8 @@ socket = Sockets(app)
 devs = {
 };
 
-socks = []
+socks = {
+}
 
 @app.route('/')
 def home():
@@ -24,6 +26,9 @@ def bid(ws):
 	try:
 		while True:
 			text = ws.receive()
+			if text is None:
+				break
+
 			print("text: " + text)
 			msg = json.loads(text)
 			
@@ -31,10 +36,12 @@ def bid(ws):
 				devs[msg['name']] = 0
 				for sock in socks:
 					try:
+						print("sending to socket...")
 						sock.send(json.dumps(devs.items()))
 					except Exception as e:
-						print('errorz: ' + str(e))
-						socks.remove(sock)
+						print("register error")
+						print(e)
+						traceback.print_exc()
 
 			elif msg['action'] == 'bid':
 				devs[msg['name']] = int(msg['number'])
@@ -42,10 +49,13 @@ def bid(ws):
 					try:
 						sock.send(json.dumps(devs.items()))
 					except Exception as e:
-						print('errorz: ' + str(e))
-						socks.remove(sock)
+						print("bid error")
+						print(e)
+						traceback.print_exc()
 	except Exception as e:
-		print('errorz: ' + str(e));
+		print('top level exception');
+		print(e)
+		traceback.print_exc()
 
 
 
