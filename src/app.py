@@ -16,14 +16,17 @@ socks = {
 }
 
 def display():
-	for sock in socks.values():
+	for poker_id in socks.keys():
 		try:
 			print("sending to socket...")
+			sock = socks[poker_id]
 			sock.send(json.dumps(bids.items()))
 		except Exception as e:
-			print("register error")
+			print("socket send error error")
 			print(e)
-			traceback.print_exc()
+			del socks[poker_id]
+			del bids[poker_id]
+			#traceback.print_exc()
 	
 
 
