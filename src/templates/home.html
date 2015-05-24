@@ -9,7 +9,7 @@
 		<style>
 			 #bids span { font-size: 32 }
 			 .col-status { width: 50px; font-size: 30px }
-			 .col-name { vertical-align: middle, font-size: 30px }
+			 .col-name { vertical-align: middle; font-size: 20px }
 			 .status-text  { display: inline-block; width: 100%; text-align: center; } 
 			 .number { font-size: 20px; font-weight: bold }
 		</style>
@@ -17,7 +17,7 @@
 
     </head>
     <body style='padding: 10px;'> 
-		<button class='btn btn-primary' style='display:inline-block' onclick='start_bid()'>Bid</button>
+		<button class='btn btn-primary' style='display:inline-block; padding: 10px' onclick='start_bid()'><i class='fa fa-lg fa-refresh'></i></button>
 		
 		<div id='button_area' style='display:inline-block'>
 		</div>
@@ -26,9 +26,6 @@
 			<tbody id='devlist'>
 			</body>
 		</table>
-
-		<input style='margin-top:10px' id='name' class='form-control'/>
-		<button style='margin-top:10px' class='btn btn-primary' onclick='register()'>Register</button>
 
         <script>
 			var app = new WebSocket("ws://vps.sonyar.info:8000/poker");
@@ -39,8 +36,17 @@
 			  if (parts.length == 2) return parts.pop().split(";").shift();
 			}
 
+			function getParam(name) {
+				name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+				var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+				results = regex.exec(location.search);
+				return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+			}
+
 			function send(data) {
-				data['poker_id'] = getCookie("poker_id");
+				//testing only
+				
+				data['poker_id'] = getParam("poker_id"); //getCookie("poker_id");
 				app.send(JSON.stringify(data));
 			}
 
@@ -56,7 +62,7 @@
 				send({ action: 'clear' });
 			}
 
-			function start_bid() {
+			function draw_bid_buttons() {
 				var bids = [1, 2, 3, 5, 8, 13];
 				var button_area = $("#button_area");
 				button_area.html('');
@@ -66,12 +72,15 @@
 				bids.forEach(function(num) {
 					button_group.append("<button class='btn btn-success'>" + num + "</button>");
 				});
+			}
 
+			function start_bid() {
 				clear();
 			}
 
 			$(document).ready(function() {
 				$("#button_area").on('click', 'button', bid);
+				draw_bid_buttons();
 			});
 
 			app.onopen = function() {
