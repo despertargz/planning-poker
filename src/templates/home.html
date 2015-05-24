@@ -18,6 +18,8 @@
 
     </head>
     <body style='padding: 10px;'> 
+		<button class='btn'>Bid</button>
+		
 		<div id='bids'>
 			<button class='btn btn-success' >1</button>
 			<button class='btn btn-success' >2</button>
@@ -25,16 +27,6 @@
 			<button class='btn btn-success' >5</button>
 			<button class='btn btn-success' >8</button>
 			<button class='btn btn-success' >13</button>
-
-			
-			<!--
-			<span class='badge'>1</span>
-			<span class='badge'>2</span>
-			<span class='badge'>3</span>
-			<span class='badge'>5</span>
-			<span class='badge'>8</span>
-			<span class='badge'>13</span>
-			-->
 		</div>
 
 		<table class='table table-bordered'>
@@ -47,6 +39,34 @@
 
         <script>
 			var app = new WebSocket("ws://vps.sonyar.info:8000/poker");
+
+			function getCookie(name) {
+			  var value = "; " + document.cookie;
+			  var parts = value.split("; " + name + "=");
+			  if (parts.length == 2) return parts.pop().split(";").shift();
+			}
+
+			function send(data) {
+				data['poker_id'] = getCookie("poker_id");
+				app.send(JSON.stringify(data));
+			}
+
+			function register() {
+				send({ action: 'register' });
+			}
+
+			function bid(e) {
+				send({ action: 'bid', number: $(e.target).text() });
+			}
+
+			$(document).ready(function() {
+				$("#bids span").click(bid);
+				$("#bids button").click(bid);
+			});
+
+			app.onopen = function() {
+				register();
+			}
 
 			app.onmessage = function(msg) {
 				var devs = JSON.parse(msg.data);
@@ -79,23 +99,6 @@
 
 				}
 			}
-
-			function send(data) {
-				app.send(JSON.stringify(data));
-			}
-
-			function register() {
-				send({ action: 'register', name: $("#name").val() });
-			}
-
-			function bid(e) {
-				send({ action: 'bid', name: $("#name").val(), number: $(e.target).text() });
-			}
-
-			$(document).ready(function() {
-				$("#bids span").click(bid);
-				$("#bids button").click(bid);
-			});
 
         </script>
     </body>

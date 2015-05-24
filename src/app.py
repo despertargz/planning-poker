@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, session, make_response
 from flask_sockets import Sockets
 import json
 import yaml
@@ -6,9 +6,10 @@ import traceback
 
 app = Flask('pp')
 app.debug = True
+app.secret_key = 'secret'
 socket = Sockets(app)
 
-devs = {
+bids = {
 };
 
 socks = {
@@ -16,12 +17,17 @@ socks = {
 
 @app.route('/')
 def home():
-	return render_template('home.html')
+	#todo: will be generated uuid
+	poker_id = request.args.get('poker_id')
+	bids[poker_id] = 0
+
+	response = make_response(render_template('home.html'))
+	response.set_cookie('poker_id', poker_id)
+	return response
 
 @socket.route('/poker')
 def bid(ws):
 	print("connecting..." + str(len(socks)))
-	socks.append(ws)
 
 	try:
 		while True:
@@ -33,21 +39,23 @@ def bid(ws):
 			msg = json.loads(text)
 			
 			if msg['action'] == 'register':
-				devs[msg['name']] = 0
-				for sock in socks:
+				socks[msg['poker_id']] = ws
+				print(socks)
+
+				for sock in socks.values():
 					try:
 						print("sending to socket...")
-						sock.send(json.dumps(devs.items()))
+						sock.send(json.dumps(bids.items()))
 					except Exception as e:
 						print("register error")
 						print(e)
 						traceback.print_exc()
 
 			elif msg['action'] == 'bid':
-				devs[msg['name']] = int(msg['number'])
-				for sock in socks:
+				bids[msg['poker_id']] = int(msg['number'])
+				for sock in socks.values():
 					try:
-						sock.send(json.dumps(devs.items()))
+						sock.send(json.dumps(bids.items()))
 					except Exception as e:
 						print("bid error")
 						print(e)
