@@ -12,24 +12,17 @@
 			 .col-name { vertical-align: middle, font-size: 30px }
 			 .status-text  { display: inline-block; width: 100%; text-align: center; } 
 			 .number { font-size: 20px; font-weight: bold }
-
 		</style>
 
 
     </head>
     <body style='padding: 10px;'> 
-		<button class='btn'>Bid</button>
+		<button class='btn btn-primary' style='display:inline-block' onclick='start_bid()'>Bid</button>
 		
-		<div id='bids'>
-			<button class='btn btn-success' >1</button>
-			<button class='btn btn-success' >2</button>
-			<button class='btn btn-success' >3</button>
-			<button class='btn btn-success' >5</button>
-			<button class='btn btn-success' >8</button>
-			<button class='btn btn-success' >13</button>
+		<div id='button_area' style='display:inline-block'>
 		</div>
 
-		<table class='table table-bordered'>
+		<table class='table table-bordered' style='margin-top: 10px'>
 			<tbody id='devlist'>
 			</body>
 		</table>
@@ -59,9 +52,26 @@
 				send({ action: 'bid', number: $(e.target).text() });
 			}
 
+			function clear() {
+				send({ action: 'clear' });
+			}
+
+			function start_bid() {
+				var bids = [1, 2, 3, 5, 8, 13];
+				var button_area = $("#button_area");
+				button_area.html('');
+				var button_group = $("<div class='btn-group'></div>");
+				button_area.append(button_group);
+			
+				bids.forEach(function(num) {
+					button_group.append("<button class='btn btn-success'>" + num + "</button>");
+				});
+
+				clear();
+			}
+
 			$(document).ready(function() {
-				$("#bids span").click(bid);
-				$("#bids button").click(bid);
+				$("#button_area").on('click', 'button', bid);
 			});
 
 			app.onopen = function() {

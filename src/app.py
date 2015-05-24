@@ -15,6 +15,18 @@ bids = {
 socks = {
 }
 
+def display():
+	for sock in socks.values():
+		try:
+			print("sending to socket...")
+			sock.send(json.dumps(bids.items()))
+		except Exception as e:
+			print("register error")
+			print(e)
+			traceback.print_exc()
+	
+
+
 @app.route('/')
 def home():
 	#todo: will be generated uuid
@@ -40,26 +52,18 @@ def bid(ws):
 			
 			if msg['action'] == 'register':
 				socks[msg['poker_id']] = ws
-				print(socks)
-
-				for sock in socks.values():
-					try:
-						print("sending to socket...")
-						sock.send(json.dumps(bids.items()))
-					except Exception as e:
-						print("register error")
-						print(e)
-						traceback.print_exc()
+				display()
 
 			elif msg['action'] == 'bid':
 				bids[msg['poker_id']] = int(msg['number'])
-				for sock in socks.values():
-					try:
-						sock.send(json.dumps(bids.items()))
-					except Exception as e:
-						print("bid error")
-						print(e)
-						traceback.print_exc()
+				display()
+
+			elif msg['action'] == 'clear':
+				for poker_id in bids:
+					bids[poker_id] = 0
+
+				display()
+
 	except Exception as e:
 		print('top level exception');
 		print(e)
