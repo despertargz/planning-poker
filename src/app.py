@@ -9,23 +9,30 @@ app.debug = True
 app.secret_key = 'secret'
 socket = Sockets(app)
 
-bids = {
-};
-
-socks = {
+devs = {
 }
 
+class Dev():
+	def __init__(self):
+		self.bid = 0
+		self.status = 1
+
+
 def display():
-	for poker_id in socks.keys():
+	display_devs = []
+	for (poker_id, dev) in devs.items():
+		display_devs.append((poker_id, dev.bid))
+
+	devs_json = json.dumps(display_devs)
+	for poker_id in devs.keys():
+		print("sending to socket...")
 		try:
-			print("sending to socket...")
-			sock = socks[poker_id]
-			sock.send(json.dumps(bids.items()))
+			print("devs json: " + devs_json)
+			devs[poker_id].socket.send(devs_json)
 		except Exception as e:
 			print("socket send error error")
 			print(e)
-			del socks[poker_id]
-			del bids[poker_id]
+			del devs[poker_id]
 			#traceback.print_exc()
 	
 
@@ -34,7 +41,7 @@ def display():
 def home():
 	#todo: will be generated uuid
 	poker_id = request.args.get('poker_id')
-	bids[poker_id] = 0
+	devs[poker_id] = Dev()
 
 	response = make_response(render_template('home.html'))
 	response.set_cookie('poker_id', poker_id)
@@ -42,7 +49,6 @@ def home():
 
 @socket.route('/poker')
 def bid(ws):
-	print("connecting..." + str(len(socks)))
 
 	try:
 		while True:
@@ -54,16 +60,16 @@ def bid(ws):
 			msg = json.loads(text)
 			
 			if msg['action'] == 'register':
-				socks[msg['poker_id']] = ws
+				devs[msg['poker_id']].socket = ws
 				display()
 
 			elif msg['action'] == 'bid':
-				bids[msg['poker_id']] = int(msg['number'])
+				devs[msg['poker_id']].bid = int(msg['number'])
 				display()
 
 			elif msg['action'] == 'clear':
-				for poker_id in bids:
-					bids[poker_id] = 0
+				for poker_id in devs:
+					devs[poker_id].bid = 0
 
 				display()
 
