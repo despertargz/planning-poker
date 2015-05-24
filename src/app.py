@@ -18,23 +18,34 @@ class Dev():
 		self.status = 1
 
 
-def display():
+def display(retry=True):
+	for dev in devs.values():
+		print(dev)
+
 	display_devs = []
 	for (poker_id, dev) in devs.items():
 		display_devs.append((poker_id, dev.bid))
 
 	devs_json = json.dumps(display_devs)
+
+	player_died = False 
 	for poker_id in devs.keys():
 		print("sending to socket...")
 		try:
 			print("devs json: " + devs_json)
-			devs[poker_id].socket.send(devs_json)
+			dev = devs[poker_id]
+			if hasattr(dev, 'socket'):
+				dev.socket.send(devs_json)
+
 		except Exception as e:
 			print("socket send error error")
 			print(e)
 			del devs[poker_id]
-			#traceback.print_exc()
+			player_died = True
 	
+	if player_died and retry:
+		display(False)
+		
 
 
 @app.route('/')
