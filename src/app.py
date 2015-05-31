@@ -24,7 +24,7 @@ def display(retry=True):
 
 	display_devs = []
 	for (poker_id, dev) in devs.items():
-		display_devs.append((poker_id, dev.bid))
+		display_devs.append((poker_id, dev.bid, dev.status))
 
 	devs_json = json.dumps(display_devs)
 
@@ -84,6 +84,11 @@ def bid(ws):
 
 				display()
 
+			elif msg['action'] == 'spectate':
+				devs[msg['poker_id']].status = 2
+				display()
+
+					
 	except Exception as e:
 		print('top level exception');
 		print(e)

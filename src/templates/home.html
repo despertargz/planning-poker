@@ -1,9 +1,10 @@
 <html>
     <head>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.3.0/knockout-min.js"></script>
         <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 		<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
 
 		<style>
@@ -12,6 +13,7 @@
 			 .col-name { vertical-align: middle; font-size: 20px }
 			 .status-text  { display: inline-block; width: 100%; text-align: center; } 
 			 .number { font-size: 20px; font-weight: bold }
+			 .dev-menu { float: right; }
 		</style>
 
 
@@ -24,6 +26,12 @@
 
 		<table class='table table-bordered' style='margin-top: 10px; width: 250px'>
 			<tbody id='devlist'>
+			</body>
+		</table>
+
+		<p>spectators</p>
+		<table class='table table-bordered' style='margin-top: 10px; width: 250px'>
+			<tbody id='spectators'>
 			</body>
 		</table>
 
@@ -62,6 +70,10 @@
 				send({ action: 'clear' });
 			}
 
+			function spectate() {
+				send({ action: 'spectate' });
+			}
+
 			function draw_bid_buttons() {
 				var bids = [1, 2, 3, 5, 8, 13];
 				var button_area = $("#button_area");
@@ -90,10 +102,11 @@
 			app.onmessage = function(msg) {
 				var devs = JSON.parse(msg.data);
 				$("#devlist").html('');
+				$("#spectators").html('');
 
 				var waiting = false;
 				for (var x in devs) {
-					if (devs[x][1] == 0) {
+					if (devs[x][1] == 0 && devs[x][2] == 1) {
 						waiting = true;
 					}
 				}
@@ -105,19 +118,29 @@
 				for (var x in devs) {
 					var name = devs[x][0];
 					var num = devs[x][1];
+					var status = devs[x][2];
+					
 
-					if (waiting && num != 0) {
-						$("#devlist").append("<tr><td class='col-status bg-success'><i class='fa fa-check status-text'></i></td><td class='col-name'>" + name + "</td></tr>");
-					}
-					else if (waiting && num == 0) {
-						$("#devlist").append("<tr><td class='col-status bg-info'><i class='fa fa-question status-text'></i></td><td class='col-name'>" + name + "</td></tr>");
+					if (status == 1) {
+						if (waiting && num != 0) {
+							$("#devlist").append("<tr><td class='col-status bg-success'><i class='fa fa-check status-text'></i></td><td class='col-name'>" + name + "<a style='float: right' onclick='spectate()'><i class='fa fa-ellipsis-v'></i></a></td></tr>");
+						}
+						else if (waiting && num == 0) {
+							$("#devlist").append("<tr><td class='col-status bg-info'><i class='fa fa-question status-text'></i></td><td class='col-name'>" + name + "<a style='float: right' onclick='spectate()'><i class='fa fa-ellipsis-v'></i></a></td></tr>");
+						}
+						else {
+							$("#devlist").append("<tr><td class='col-status bg-success'><span class='number status-text'>" + num + "</span></td><td class='col-name'>" + name + "</td></tr>");
+						}
 					}
 					else {
-						$("#devlist").append("<tr><td class='col-status bg-success'><span class='number status-text'>" + num + "</span></td><td class='col-name'>" + name + "</td></tr>");
+						$("#spectators").append("<tr><td class='col-status bg-success'><i class='fa fa-eye'></i></td><td class='col-name'>" + name + "</td></tr>");
 					}
-
 				}
 			}
+
+			function ViewModel() {
+			}
+			ko.applyBindings(new ViewModel());
 
         </script>
     </body>
