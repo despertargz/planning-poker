@@ -3,6 +3,7 @@
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.3.0/knockout-min.js"></script>
         <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
 		<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
@@ -12,7 +13,7 @@
 			 .col-status { width: 50px; font-size: 30px; text-align: center }
 			 .col-name { vertical-align: middle; font-size: 20px }
 			 .status-text  { display: inline-block; width: 100%; text-align: center; } 
-			 .number { width: 50px; font-size: 20px; text-align font-weight: bold }
+			 .number { width: 50px; font-size: 20px; text-align: center; font-weight: bold }
 			 .dev-menu { float: right; }
 			 .dots { cursor: pointer }
 		</style>
@@ -30,12 +31,12 @@
 				<tr>
 					<!-- ko if: $root.waiting() && bid == 0 -->
 						<td class='col-status bg-info'>
-							 <i class='fa fa-question'></i> 
+							 <i class='fa fa-fw fa-question'></i> 
 						 </td>	
 					<!-- /ko -->
 					<!-- ko if: $root.waiting() && bid != 0 -->
 						<td class='col-status bg-success'>
-							 <i class='fa fa-check'></i> 
+							 <i class='fa fa-fw fa-check'></i> 
 						 </td>	
 					<!-- /ko -->
 					<!-- ko if: !$root.waiting() -->
@@ -45,7 +46,9 @@
 					<!-- /ko -->
 					<td class='col-name'>
 						<span data-bind='text: name'></span>
-						<a style='float: right' class='dots' onclick='spectate()'><i class='fa fa-ellipsis-v'></i></a>
+						<a style='float: right' class='dots' onclick='spectate()'>
+							<i class='fa fa-ellipsis-v'></i>
+						</a>
 					</td>
 					
 				</tr>
