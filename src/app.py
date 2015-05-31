@@ -24,7 +24,7 @@ def display(retry=True):
 
 	display_devs = []
 	for (poker_id, dev) in devs.items():
-		display_devs.append((poker_id, dev.bid, dev.status))
+		display_devs.append({ 'name': poker_id, 'bid': dev.bid, 'status': dev.status })
 
 	devs_json = json.dumps(display_devs)
 
@@ -86,6 +86,12 @@ def bid(ws):
 
 			elif msg['action'] == 'spectate':
 				devs[msg['poker_id']].status = 2
+				devs[msg['poker_id']].bid = 0
+				display()
+
+			elif msg['action'] == 'unspectate':
+				devs[msg['poker_id']].status = 1 
+				devs[msg['poker_id']].bid = 0
 				display()
 
 					

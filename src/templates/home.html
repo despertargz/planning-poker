@@ -9,11 +9,12 @@
 
 		<style>
 			 #bids span { font-size: 32 }
-			 .col-status { width: 50px; font-size: 30px }
+			 .col-status { width: 50px; font-size: 30px; text-align: center }
 			 .col-name { vertical-align: middle; font-size: 20px }
 			 .status-text  { display: inline-block; width: 100%; text-align: center; } 
-			 .number { font-size: 20px; font-weight: bold }
+			 .number { width: 50px; font-size: 20px; text-align font-weight: bold }
 			 .dev-menu { float: right; }
+			 .dots { cursor: pointer }
 		</style>
 
 
@@ -25,17 +26,69 @@
 		</div>
 
 		<table class='table table-bordered' style='margin-top: 10px; width: 250px'>
-			<tbody id='devlist'>
+			<tbody id='devlist' data-bind='foreach: bidders'>
+				<tr>
+					<!-- ko if: $root.waiting() && bid == 0 -->
+						<td class='col-status bg-info'>
+							 <i class='fa fa-question'></i> 
+						 </td>	
+					<!-- /ko -->
+					<!-- ko if: $root.waiting() && bid != 0 -->
+						<td class='col-status bg-success'>
+							 <i class='fa fa-check'></i> 
+						 </td>	
+					<!-- /ko -->
+					<!-- ko if: !$root.waiting() -->
+						<td class='number bg-success'>
+							<span data-bind='text: bid'></span>
+						 </td>	
+					<!-- /ko -->
+					<td class='col-name'>
+						<span data-bind='text: name'></span>
+						<a style='float: right' class='dots' onclick='spectate()'><i class='fa fa-ellipsis-v'></i></a>
+					</td>
+					
+				</tr>
 			</body>
 		</table>
 
 		<p>spectators</p>
 		<table class='table table-bordered' style='margin-top: 10px; width: 250px'>
-			<tbody id='spectators'>
+			<tbody id='spectators' data-bind='foreach: spectators'>
+				<tr>
+					<td class='col-status bg-info'>
+						 <i class='fa fa-eye'></i> 
+					 </td>	
+					<td class='col-name'>
+						<span data-bind='text: name'></span>
+						<a style='float: right' class='dots' onclick='unspectate()'><i class='fa fa-ellipsis-v'></i></a>
+					</td>
+				</tr>
 			</body>
 		</table>
 
         <script>
+			function ViewModel() {
+				var self = this;
+
+				self.devs = ko.observable([]);
+
+				self.bidders = ko.computed(function() {
+					return self.devs().filter(function(o) { return o.status == 1 });
+				});
+
+				self.spectators = ko.computed(function() {
+					return self.devs().filter(function(o) { return o.status == 2 });
+				});
+
+				self.waiting = ko.computed(function() {
+					return self.bidders().filter(function(o) { return o.bid == 0 }).length > 0;
+				});
+			}
+			model = new ViewModel();
+			ko.applyBindings(model);
+			
+
 			var app = new WebSocket("ws://vps.sonyar.info:8000/poker");
 
 			function getCookie(name) {
@@ -74,6 +127,10 @@
 				send({ action: 'spectate' });
 			}
 
+			function unspectate() {
+				send({ action: 'unspectate' });
+			}
+
 			function draw_bid_buttons() {
 				var bids = [1, 2, 3, 5, 8, 13];
 				var button_area = $("#button_area");
@@ -101,46 +158,15 @@
 
 			app.onmessage = function(msg) {
 				var devs = JSON.parse(msg.data);
-				$("#devlist").html('');
-				$("#spectators").html('');
 
-				var waiting = false;
-				for (var x in devs) {
-					if (devs[x][1] == 0 && devs[x][2] == 1) {
-						waiting = true;
-					}
-				}
-
-				if (waiting === false) {
+				if (model.waiting() === false) {
 					devs = devs.sort(function(a,b) { return b[1] - a[1]; });
 				}
 
-				for (var x in devs) {
-					var name = devs[x][0];
-					var num = devs[x][1];
-					var status = devs[x][2];
-					
-
-					if (status == 1) {
-						if (waiting && num != 0) {
-							$("#devlist").append("<tr><td class='col-status bg-success'><i class='fa fa-check status-text'></i></td><td class='col-name'>" + name + "<a style='float: right' onclick='spectate()'><i class='fa fa-ellipsis-v'></i></a></td></tr>");
-						}
-						else if (waiting && num == 0) {
-							$("#devlist").append("<tr><td class='col-status bg-info'><i class='fa fa-question status-text'></i></td><td class='col-name'>" + name + "<a style='float: right' onclick='spectate()'><i class='fa fa-ellipsis-v'></i></a></td></tr>");
-						}
-						else {
-							$("#devlist").append("<tr><td class='col-status bg-success'><span class='number status-text'>" + num + "</span></td><td class='col-name'>" + name + "</td></tr>");
-						}
-					}
-					else {
-						$("#spectators").append("<tr><td class='col-status bg-success'><i class='fa fa-eye'></i></td><td class='col-name'>" + name + "</td></tr>");
-					}
-				}
+				model.devs(devs);
+				return;
 			}
 
-			function ViewModel() {
-			}
-			ko.applyBindings(new ViewModel());
 
         </script>
     </body>
