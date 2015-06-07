@@ -92,7 +92,7 @@
 			ko.applyBindings(model);
 			
 
-			var app = new WebSocket("ws://vps.sonyar.info:8000/poker");
+			var app = new WebSocket("ws://vps.sonyar.info:8000/poker?room=some_room");
 
 			function getCookie(name) {
 			  var value = "; " + document.cookie;
