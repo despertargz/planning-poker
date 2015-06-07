@@ -10,10 +10,11 @@
 
 		<style>
 			 #bids span { font-size: 32 }
-			 .col-status { width: 50px; font-size: 30px; text-align: center }
+			 .col-status { width: 50px; height: 50px; padding:0px; font-size: 30px; text-align: center; }
+			 .status-div { height: 30px; width: 30px; line-height: 30px; font-weight: bold; margin: auto; }
 			 .col-name { vertical-align: middle; font-size: 20px }
 			 .status-text  { display: inline-block; width: 100%; text-align: center; } 
-			 .number { width: 50px; font-size: 20px; text-align: center; font-weight: bold }
+			 .number { height: 50px; width: 50px; font-size: 20px; text-align: center; font-weight: bold }
 			 .dev-menu { float: right; }
 			 .dots { cursor: pointer }
 			 .mypanel-heading { padding: 5px; }
@@ -27,22 +28,27 @@
 		<div id='button_area' style='display:inline-block'>
 		</div>
 
-		<table class='table table-bordered' style='margin-top: 10px; width: 250px'>
+		<table class='table table-bordered' style='margin-top: 10px; width: 250px; table-layout: fixed'>
 			<tbody id='devlist' data-bind='foreach: bidders'>
-				<tr>
+				<tr style='height: 30px'>
 					<!-- ko if: $root.waiting() && bid == 0 -->
 						<td class='col-status bg-info'>
-							 <i class='fa fa-fw fa-question'></i> 
+							<div class='status-div'>
+							 	<i class='fa fa-question'></i> 
+							 </div>
 						 </td>	
 					<!-- /ko -->
 					<!-- ko if: $root.waiting() && bid != 0 -->
 						<td class='col-status bg-success'>
-							 <i class='fa fa-fw fa-check'></i> 
+							<div class='status-div'>
+							 	<i class='fa fa-check'></i> 
+							 </div>
 						 </td>	
 					<!-- /ko -->
 					<!-- ko if: !$root.waiting() -->
-						<td class='number bg-success'>
-							<span data-bind='text: bid'></span>
+						<td class='col-status bg-success'>
+							<div class='status-div' data-bind='text: bid'>
+							</div>
 						 </td>	
 					<!-- /ko -->
 					<td class='col-name'>
@@ -139,10 +145,12 @@
 
 			function spectate() {
 				send({ action: 'spectate' });
+				$("#button_area button").prop("disabled", true);
 			}
 
 			function unspectate() {
 				send({ action: 'unspectate' });
+				$("#button_area button").prop("disabled", false);
 			}
 
 			function draw_bid_buttons() {
