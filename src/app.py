@@ -22,33 +22,31 @@ class Dev():
 		self.status = 1
 
 
-def display(retry=True):
-	for dev in devs.values():
-		print(dev)
+def display(msg, retry=True):
+	room_id = msg['room_id']
 
 	display_devs = []
-	for (user_id, dev) in devs.items():
+	for (user_id, dev) in devs[room_id].items():
 		display_devs.append({ 'name': user_id, 'bid': dev.bid, 'status': dev.status })
 
 	devs_json = json.dumps(display_devs)
 
 	player_died = False 
-	for user_id in devs.keys():
-		print("sending to socket...")
+	for (user_id,dev) in devs[room_id].items():
+		print("sending to socket to ...")
 		try:
 			print("devs json: " + devs_json)
-			dev = devs[user_id]
 			if hasattr(dev, 'socket'):
 				dev.socket.send(devs_json)
 
 		except Exception as e:
-			print("socket send error error")
+			print("socket send error")
 			print(e)
-			del devs[user_id]
+			del devs[room_id][user_id]
 			player_died = True
 	
 	if player_died and retry:
-		display(False)
+		display(msg, False)
 		
 
 
@@ -85,12 +83,12 @@ def bid(ws):
 				dev = Dev()
 				dev.socket = ws
 				devs[room_id][user_id] = dev
-				display()
+				display(msg)
 
 			elif msg['action'] == 'bid':
 				dev = get_dev(msg)
 				dev.bid = int(msg['number'])
-				display()
+				display(msg)
 
 			elif msg['action'] == 'clear':
 				room_id = msg['room_id']
@@ -98,19 +96,19 @@ def bid(ws):
 				for user_id in room:
 					devs[room_id][user_id].bid = 0
 
-				display()
+				display(msg)
 
 			elif msg['action'] == 'spectate':
 				dev = get_dev(msg)
 				dev.status = 2
 				dev.bid = 0
-				display()
+				display(msg)
 
 			elif msg['action'] == 'unspectate':
 				dev = get_dev(msg)
 				dev.status = 1 
 				dev.bid = 0
-				display()
+				display(msg)
 
 					
 	except Exception as e:

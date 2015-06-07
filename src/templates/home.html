@@ -55,20 +55,26 @@
 			</body>
 		</table>
 
-		<p>spectators</p>
-		<table class='table table-bordered' style='margin-top: 10px; width: 250px'>
-			<tbody id='spectators' data-bind='foreach: spectators'>
-				<tr>
-					<td class='col-status bg-info'>
-						 <i class='fa fa-eye'></i> 
-					 </td>	
-					<td class='col-name'>
-						<span data-bind='text: name'></span>
-						<a style='float: right' class='dots' onclick='unspectate()'><i class='fa fa-ellipsis-v'></i></a>
-					</td>
-				</tr>
-			</body>
-		</table>
+		<div class='panel panel-primary'>
+			<div class='panel-heading'>
+				<p>Spectators</p>
+			</div>
+			<div class='panel-body'>
+				<table class='table table-bordered' style='margin-top: 10px; width: 250px'>
+					<tbody id='spectators' data-bind='foreach: spectators'>
+						<tr>
+							<td class='col-status bg-info'>
+								 <i class='fa fa-eye'></i> 
+							 </td>	
+							<td class='col-name'>
+								<span data-bind='text: name'></span>
+								<a style='float: right' class='dots' onclick='unspectate()'><i class='fa fa-ellipsis-v'></i></a>
+							</td>
+						</tr>
+					</body>
+				</table>
+			</div>
+		</div>
 
         <script>
 			function ViewModel() {
@@ -92,7 +98,7 @@
 			ko.applyBindings(model);
 			
 
-			var app = new WebSocket("ws://vps.sonyar.info:8000/poker?room=some_room");
+			var app = new WebSocket("ws://vps.sonyar.info:8000/poker");
 
 			function getCookie(name) {
 			  var value = "; " + document.cookie;
@@ -110,7 +116,8 @@
 			function send(data) {
 				//testing only
 				
-				data['poker_id'] = getParam("poker_id"); //getCookie("poker_id");
+				data['user_id'] = getParam("user_id"); //getCookie("user_id");
+				data['room_id'] = getParam("room_id"); //getCookie("room_id");
 				app.send(JSON.stringify(data));
 			}
 
