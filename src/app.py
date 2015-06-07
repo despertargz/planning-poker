@@ -10,6 +10,10 @@ app.secret_key = 'secret'
 socket = Sockets(app)
 
 devs = {
+	'buu': {
+	},
+	'cell': {
+	}
 }
 
 class Dev():
@@ -23,24 +27,24 @@ def display(retry=True):
 		print(dev)
 
 	display_devs = []
-	for (poker_id, dev) in devs.items():
-		display_devs.append({ 'name': poker_id, 'bid': dev.bid, 'status': dev.status })
+	for (user_id, dev) in devs.items():
+		display_devs.append({ 'name': user_id, 'bid': dev.bid, 'status': dev.status })
 
 	devs_json = json.dumps(display_devs)
 
 	player_died = False 
-	for poker_id in devs.keys():
+	for user_id in devs.keys():
 		print("sending to socket...")
 		try:
 			print("devs json: " + devs_json)
-			dev = devs[poker_id]
+			dev = devs[user_id]
 			if hasattr(dev, 'socket'):
 				dev.socket.send(devs_json)
 
 		except Exception as e:
 			print("socket send error error")
 			print(e)
-			del devs[poker_id]
+			del devs[user_id]
 			player_died = True
 	
 	if player_died and retry:
@@ -48,14 +52,19 @@ def display(retry=True):
 		
 
 
+def get_dev(msg):
+	room_id = msg['room_id']
+	user_id = msg['user_id']
+	return devs[room_id][user_id]
+		
+
 @app.route('/')
 def home():
 	#todo: will be generated uuid
-	poker_id = request.args.get('poker_id')
-	devs[poker_id] = Dev()
+	user_id = request.args.get('user_id')
 
 	response = make_response(render_template('home.html'))
-	response.set_cookie('poker_id', poker_id)
+	response.set_cookie('user_id', user_id)
 	return response
 
 @socket.route('/poker')
@@ -71,27 +80,36 @@ def bid(ws):
 			msg = json.loads(text)
 			
 			if msg['action'] == 'register':
-				devs[msg['poker_id']].socket = ws
+				user_id = msg['user_id']
+				room_id = msg['room_id']
+				dev = Dev()
+				dev.socket = ws
+				devs[room_id][user_id] = dev
 				display()
 
 			elif msg['action'] == 'bid':
-				devs[msg['poker_id']].bid = int(msg['number'])
+				dev = get_dev(msg)
+				dev.bid = int(msg['number'])
 				display()
 
 			elif msg['action'] == 'clear':
-				for poker_id in devs:
-					devs[poker_id].bid = 0
+				room_id = msg['room_id']
+				room = devs[room_id]
+				for user_id in room:
+					devs[room_id][user_id].bid = 0
 
 				display()
 
 			elif msg['action'] == 'spectate':
-				devs[msg['poker_id']].status = 2
-				devs[msg['poker_id']].bid = 0
+				dev = get_dev(msg)
+				dev.status = 2
+				dev.bid = 0
 				display()
 
 			elif msg['action'] == 'unspectate':
-				devs[msg['poker_id']].status = 1 
-				devs[msg['poker_id']].bid = 0
+				dev = get_dev(msg)
+				dev.status = 1 
+				dev.bid = 0
 				display()
 
 					
@@ -99,6 +117,20 @@ def bid(ws):
 		print('top level exception');
 		print(e)
 		traceback.print_exc()
+
+
+#@app.route('/create_room')
+#def create_room():
+#	name = request.args.get('name')
+
+
+
+
+
+
+
+
+
 
 
 
