@@ -53,11 +53,8 @@ def get_dev(msg):
 
 @app.route('/r/<room>')
 def home(room):
-	#todo: will be generated uuid
-	user_id = request.args.get('user_id')
-
 	response = make_response(render_template('home.html', room=room))
-	response.set_cookie('user_id', user_id)
+	#response.set_cookie('user_id', user_id)
 
         if room not in devs:
             devs[room] = {}

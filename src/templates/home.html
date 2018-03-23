@@ -82,11 +82,36 @@
 				</body>
 			</table>
 
+
+<div id='pickUsername' class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">What's your name?</h4>
+      </div>
+      <div class="modal-body">
+		<input id='usernameInput' type='text' class='form-control' data-bind='value: username' />
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss='modal'>OK</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
         <script>
+			$("#usernameInput").keypress(function(e) {
+				if (e.keyCode == 13) {
+					$("#pickUsername").modal('hide');
+				}
+			});
+
 			function ViewModel() {
 				var self = this;
 
 				self.devs = ko.observable([]);
+
+				self.username = ko.observable();
 
 				self.bidders = ko.computed(function() {
 					return self.devs().filter(function(o) { return o.status == 1 });
@@ -102,7 +127,6 @@
 			}
 			model = new ViewModel();
 			ko.applyBindings(model);
-			
 
 			var app = new WebSocket("ws://vps.sonyar.info:8000/poker");
 
@@ -119,14 +143,8 @@
 				return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 			}
 
-			function get_user_id() {
-				return getParam("user_id"); //getCookie("user_id");
-			}
-
 			function send(data) {
-				//testing only
-				
-				data['user_id'] = get_user_id();
+				data['user_id'] = model.username();
 				data['room_id'] = '{{ room }}';
 				app.send(JSON.stringify(data));
 			}
@@ -170,12 +188,22 @@
 			}
 
 			$(document).ready(function() {
+				$("#pickUsername").modal();
+
+				$("#pickUsername").on("shown.bs.modal", function(e) {
+					$("#usernameInput").focus();
+				});
+
+				$("#pickUsername").on('hidden.bs.modal', function(e) {
+					console.log("Hiding modal! username is: " + model.username());
+					register();
+				});
+
 				$("#button_area").on('click', 'button', bid);
 				draw_bid_buttons();
 			});
 
 			app.onopen = function() {
-				register();
 			}
 
 			app.onmessage = function(msg) {
