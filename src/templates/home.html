@@ -127,7 +127,7 @@
 				//testing only
 				
 				data['user_id'] = get_user_id();
-				data['room_id'] = getParam("room_id"); //getCookie("room_id");
+				data['room_id'] = '{{ room }}';
 				app.send(JSON.stringify(data));
 			}
 

@@ -9,12 +9,7 @@ app.debug = True
 app.secret_key = 'secret'
 socket = Sockets(app)
 
-devs = {
-	'buu': {
-	},
-	'cell': {
-	}
-}
+devs = {}
 
 class Dev():
 	def __init__(self):
@@ -56,18 +51,22 @@ def get_dev(msg):
 	return devs[room_id][user_id]
 		
 
-@app.route('/')
-def home():
+@app.route('/r/<room>')
+def home(room):
 	#todo: will be generated uuid
 	user_id = request.args.get('user_id')
 
-	response = make_response(render_template('home.html'))
+	response = make_response(render_template('home.html', room=room))
 	response.set_cookie('user_id', user_id)
+
+        if room not in devs:
+            devs[room] = {}
+
 	return response
+
 
 @socket.route('/poker')
 def bid(ws):
-
 	try:
 		while True:
 			text = ws.receive()

@@ -1,1 +1,1 @@
-gunicorn -k flask_sockets.worker -b vps.sonyar.info:8000 app:app
+gunicorn -k flask_sockets.worker -b 0.0.0.0:8000 app:app
