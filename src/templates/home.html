@@ -53,7 +53,7 @@
 					<!-- /ko -->
 					<td class='col-name'>
 						<span data-bind='text: name'></span>
-						<!-- ko if: get_user_id() == name -->
+						<!-- ko if: $root.username() == name -->
 						<a style='float: right' class='dots' onclick='spectate()'>
 							<i class='fa fa-ellipsis-v'></i>
 						</a>
@@ -72,7 +72,7 @@
 						 </td>	
 						<td class='col-name'>
 							<span data-bind='text: name'></span>
-							<!-- ko if: get_user_id() == name -->
+							<!-- ko if: $root.username() == name -->
 							<a style='float: right' class='dots' onclick='unspectate()'>
 								<i class='fa fa-ellipsis-v'></i>
 							</a>
